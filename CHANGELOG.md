@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `npm run check` as the complete local verification command.
+- `npm run check:knowledge` to validate knowledge index links and module structure.
+- `npm run report:adapters` to print adapter size and approximate token budgets.
+- Agent behavior evaluation guide under `docs/evaluation.md`.
+- Manual evaluation scenarios under `evals/`.
+- Release and versioning policy under `docs/release.md`.
+- Placeholder for curated examples under `examples/`.
+
+### Changed
+
+- CI now runs the full check suite on Node 18, 20, and 22.
+- README and contribution guidance now document quality gates and behavior evaluation.
+- Architecture documentation now covers knowledge integrity, adapter budget reporting, and behavioral evaluation.
+
 ## [0.1.0] - 2026-06-03
 
 Initial public release.

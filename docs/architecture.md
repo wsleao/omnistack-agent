@@ -1,6 +1,6 @@
 # Architecture
 
-omnistack-agent is built on one idea: **author the agent once, ship it everywhere.** This document explains how the single source becomes per-platform adapters, how the two build modes differ, how drift is prevented, and how to add a new platform.
+omnistack-agent is built on one idea: **author the agent once, ship it everywhere.** This document explains how the single source becomes per-platform adapters, how the two build modes differ, how drift is prevented, how knowledge integrity is enforced, and how to add a new platform.
 
 ## Single source → build → adapters
 
@@ -43,7 +43,11 @@ Each target declares a `mode`:
 
 Both modes always include the complete `core/` brain — only the knowledge depth changes. The logic lives in `assembleKnowledge(modules, indexBody, mode)`.
 
-## Anti-drift: content hash + `validate`
+## Quality gates
+
+Because this repository distributes generated prompt files, the quality gates cover both **file correctness** and **agent behavior**.
+
+### Anti-drift: content hash + `validate`
 
 Because adapters are committed, they can fall out of sync with the source if someone edits `core/`/`knowledge/` but forgets to rebuild — or edits an adapter by hand. Two mechanisms prevent that:
 
@@ -56,9 +60,40 @@ Because adapters are committed, they can fall out of sync with the source if som
 
    re-runs the entire build *in memory* and byte-compares the result against what's on disk. If anything differs (or a file is missing), it lists the stale adapters and exits non-zero with `✗ Adapters out of sync`. When everything matches it prints `✓ All 9 adapters in sync.`
 
-CI runs `npm run validate` on every pull request, so a PR that changes the source without committing the regenerated adapters — or that tampers with an adapter directly — fails automatically. The fix is always the same: run `npm run build` and commit the result.
+### Knowledge integrity: `check:knowledge`
 
-`node --test` runs the unit tests for the pure assembly functions (`scripts/lib.test.mjs`), guarding the build logic itself.
+`npm run check:knowledge` validates that:
+
+- every `knowledge/**/*.md` module is linked from `knowledge/_index.md`;
+- every Markdown link in the index points to an existing module;
+- every module has the required template headings;
+- every module declares a valid level marker: `beginner`, `intermediate`, or `advanced`.
+
+This is especially important for `lean` adapters, because they include the index rather than the complete module content.
+
+### Adapter budget visibility: `report:adapters`
+
+`npm run report:adapters` prints the generated size of every adapter and an approximate token count. The approximation is intentionally dependency-free and model-agnostic; use it as a budget signal, not as exact tokenizer output.
+
+### Complete check
+
+Run everything locally with:
+
+```bash
+npm run check
+```
+
+CI runs the same check suite on Node 18, 20, and 22.
+
+## Behavior evaluation
+
+Build correctness does not prove prompt quality. Behavior regressions should be checked manually with the scenarios in `evals/` and scored using `docs/evaluation.md`.
+
+Use behavior evaluation when changing:
+
+- core identity, principles, workflow, or guardrails;
+- knowledge modules that affect answer style or technical recommendations;
+- platform adapter modes or generated prompt structure.
 
 ## How to add a new platform
 

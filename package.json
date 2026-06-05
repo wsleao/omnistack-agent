@@ -8,6 +8,9 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "validate": "node scripts/validate.mjs",
+    "check:knowledge": "node scripts/check-knowledge.mjs",
+    "report:adapters": "node scripts/adapter-report.mjs",
+    "check": "node --test && npm run check:knowledge && npm run validate && npm run report:adapters",
     "test": "node --test"
   },
   "keywords": [

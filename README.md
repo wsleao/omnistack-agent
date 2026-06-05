@@ -37,6 +37,27 @@ Pick your platform, copy the listed file's contents, and paste it where that pla
 
 > Full per-platform walkthroughs with screenshots-worthy detail live in [`docs/platforms.md`](docs/platforms.md).
 
+## ✅ Quality checks
+
+Run the complete local check suite with:
+
+```bash
+npm run check
+```
+
+This runs:
+
+- `node --test` — unit tests for the deterministic build pipeline.
+- `npm run check:knowledge` — verifies every knowledge module is linked from `knowledge/_index.md`, every index link resolves, and every module follows the required template.
+- `npm run validate` — rebuilds adapters in memory and confirms committed adapters are in sync.
+- `npm run report:adapters` — prints adapter size and approximate token budget.
+
+CI runs the same suite on Node 18, 20, and 22.
+
+## 🧪 Evaluating agent behavior
+
+Build correctness is not enough for a prompt repository. Use [`docs/evaluation.md`](docs/evaluation.md) and the scenarios under [`evals/`](evals/) to manually score whether a change improves or regresses the agent's software-engineering behavior.
+
 ## 🤝 How to contribute
 
 Contributions are welcome — new knowledge modules, language seeds, fixes, and translations all help. There is **one golden rule**:
@@ -47,8 +68,9 @@ The workflow:
 
 1. **Edit the source.** Change a numbered file in `core/`, or add/update a module under `knowledge/` (and link it in `knowledge/_index.md`).
 2. **Rebuild the adapters.** Run `npm run build` to regenerate every file under `adapters/`.
-3. **Verify.** Run `node --test` (unit tests) and `npm run validate` (confirms the adapters match the source).
-4. **Open a PR.** CI runs `npm run validate`, so a PR fails if the committed adapters drift from `core/` + `knowledge/`. Always commit the regenerated adapters alongside your source change.
+3. **Verify.** Run `npm run check` to execute tests, knowledge checks, adapter validation, and the adapter size report.
+4. **Evaluate behavior.** Run relevant scenarios from `evals/` when the change affects agent behavior.
+5. **Open a PR.** CI runs `npm run check`, so a PR fails if the committed adapters drift from `core/` + `knowledge/` or if the knowledge base is structurally invalid.
 
 Requirements: **Node ≥ 18**, zero npm dependencies. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full guide, including the knowledge-module template and commit conventions.
 
@@ -61,9 +83,10 @@ omnistack-agent/
 ├── knowledge/   # Modular knowledge base — one topic per Markdown file,
 │                #   indexed by knowledge/_index.md.
 ├── adapters/    # GENERATED per-platform output. Do not edit by hand.
-├── scripts/     # Zero-dependency Node build (build.mjs), drift-detecting
-│                #   validate (validate.mjs), pure lib + tests.
-├── docs/        # Guides: architecture, adding knowledge, platforms.
+├── scripts/     # Zero-dependency Node build, validation, quality checks,
+│                #   adapter size reporting, and tests.
+├── docs/        # Guides: architecture, adding knowledge, platforms, evaluation.
+├── evals/       # Manual behavior-regression scenarios for the agent.
 └── assets/      # Banner and other static media.
 ```
 
